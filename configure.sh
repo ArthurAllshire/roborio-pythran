@@ -39,3 +39,5 @@ for dep in $DEPS; do
 done
 
 popd
+
+cp pythranrc ~/.pythranrc

@@ -1,0 +1,11 @@
+[compiler]
+defines=
+undefs=
+include_dirs=
+libs=/usr/local/lib/libtatlas.so
+library_dirs=
+cflags=-std=c++11
+ldflags=
+blas=atlas
+CC=/usr/local/bin/arm-frc2019-linux-gnueabi-gcc
+CXX=/usr/local/bin/arm-frc2019-linux-gnueabi-g++

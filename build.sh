@@ -1,6 +1,5 @@
 #!/bin/bash -ex
 
-OPENCV_VERSION=3.4.5
 PYTHON_VERSION=3.7
 
 pushd `dirname $0`
@@ -8,9 +7,7 @@ ROOT=`pwd`
 popd
 
 BUILD=`pwd`/build
-SYSROOT="$BUILD"/sysroot
-CMAKE_TOOLCHAIN_FILE=$(pwd)/toolchain.cmake
-CVDIR="$ROOT"/opencv-${OPENCV_VERSION}
+SYSROOT=/usr/local/arm-frc2019-linux-gnueabi
 
 function unpack_download {
   FNAME=$(basename $1)
@@ -19,6 +16,7 @@ function unpack_download {
   case "$EXT" in
     "ipk")
       ar -x "$ROOT"/downloads/"$FNAME"
+      echo "Unpacking $FNAME" 
       tar -xf data.tar.gz -C "$SYSROOT"
       rm data.tar.gz control.tar.gz debian-binary
       ;;
@@ -36,13 +34,6 @@ function assert_path {
   fi
 }
 
-# if [ -z "$JAVA_HOME" ]; then
-#   echo "ERROR: JAVA_HOME not set! (maybe you need to do '. /etc/profile', or logout/login)"
-#   exit 1
-# fi
-
-sed -i 's/arm-linux-gnueabi/arm-frc2019-linux-gnueabi/g' "$CVDIR"/platforms/linux/arm-gnueabi.toolchain.cmake
-
 [ -d build ] || mkdir build
 pushd build
 
@@ -53,6 +44,7 @@ PYTHON3_SITE_PACKAGES="$SYSROOT"/usr/local/lib/python${PYTHON_VERSION}/site-pack
 PYTHON3_INCLUDE_PATH="$SYSROOT"/usr/local/include/python${PYTHON_VERSION}m
 PYTHON3_LIBRARY="$SYSROOT"/usr/local/lib/libpython${PYTHON_VERSION}m.so.1.0
 PYTHON3_NUMPY_INCLUDE_DIRS="$PYTHON3_SITE_PACKAGES"/numpy/core/include
+PYTHRAN_INCLUDE_DIRS=/usr/local/lib/python3.6/dist-packages/pythran
 
 mkdir -p "$PYTHON3_SITE_PACKAGES"
 echo "$PYTHON3_SITE_PACKAGES"
@@ -65,29 +57,17 @@ assert_path -d "$PYTHON3_INCLUDE_PATH"
 assert_path -f "$PYTHON3_LIBRARY"
 assert_path -d "$PYTHON3_NUMPY_INCLUDE_DIRS"
 
-CMAKE_PREFIX_PATH="$SYSROOT"/usr/local cmake \
-  -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}" \
-  -DOPENCV_VCSVERSION=${OPENCV_VERSION} \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DENABLE_NEON=ON -DENABLE_VFPV3=ON \
-  -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF \
-  -DWITH_OPENCL=NO \
-  -DOPENCV_SKIP_PYTHON_LOADER=ON \
-  -DOPENCV_PYTHON3_INSTALL_PATH=lib/python3.7/site-packages \
-  "-DPYTHON3_INCLUDE_PATH=${PYTHON3_INCLUDE_PATH}" \
-  "-DPYTHON3_INCLUDE_DIR=${PYTHON3_INCLUDE_PATH}" \
-  "-DPYTHON3_INCLUDE_DIR2=${PYTHON3_INCLUDE_PATH}" \
-  "-DPYTHON3_LIBRARY=${PYTHON3_LIBRARY}" \
-  "-DPYTHON3_NUMPY_INCLUDE_DIRS=${PYTHON3_NUMPY_INCLUDE_DIRS}" \
-  "$CVDIR"
-
-if which nproc; then
-  MAKEARGS="-j `nproc`"
-fi
-
-make $MAKEARGS
-
-cpack -G TGZ
-mv OpenCV-${OPENCV_VERSION}-arm.tar.gz ${ROOT}/OpenCV-${OPENCV_VERSION}-cortexa9-vfpv3.tar.gz
-popd
-
+echo "Running compiler..."
+/usr/local/bin/arm-frc2019-linux-gnueabi-g++ "$ROOT"/src/estimator_pythran.cpp \
+    -pthread -DNDEBUG -g -fwrapv -O2 -Wall -g \
+    -fstack-protector-strong -Wformat \
+    -Werror=format-security -Wdate-time \
+    -D_FORTIFY_SOURCE=2 -fPIC \
+    -DENABLE_PYTHON_MODULE -D__PYTHRAN__=3 \
+    -DENABLE_PYTHON_MODULE -D__PYTHRAN__=3 \
+    -DPYTHRAN_BLAS_ATLAS -DPYTHRAN_BLAS_ATLAS \
+    -I"$PYTHRAN_INCLUDE_DIRS"
+    -I"$PYTHON3_NUMPY_INCLUDE_DIRS"
+    -I"$PYTHON3_INCLUDE_PATH"
+    -std=c++11 \
+    -o src/estimator_pythran.o \
