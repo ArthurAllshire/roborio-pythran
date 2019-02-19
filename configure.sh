@@ -2,6 +2,9 @@
 
 cd `dirname $0`
 
+XSIMD_REPO=https://github.com/QuantStack/xsimd
+XSIMD_RELEASE=7.1.2
+
 function download {
   URI="$1"
   FNAME=$(basename $1)
@@ -28,6 +31,25 @@ localefix
 
 apt install -y python3 python3-pip
 pip3 install -r requirements.txt
+
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git clone https://github.com/serge-sans-paille/pythran
+pushd pythran
+echo "Patching pythran's xsimd installation so the includes actually work with the cross compiler"
+pushd third_party
+rm -rf xsimd
+git clone "$XSIMD_REPO" xsimd-repo --branch "$XSIMD_RELEASE"
+pushd xsimd-repo
+git remote add patcher https://github.com/wolfv/xsimd
+git fetch patcher
+git rebase patcher/fix_includes
+popd
+cp -r xsimd-repo/include/xsimd xsimd
+rm -rf xsimd-repo
+popd
+pip3 install -e .
+popd
 
 DEPS=`cat deps`
 

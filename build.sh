@@ -44,7 +44,8 @@ PYTHON3_SITE_PACKAGES="$SYSROOT"/usr/local/lib/python${PYTHON_VERSION}/site-pack
 PYTHON3_INCLUDE_PATH="$SYSROOT"/usr/local/include/python${PYTHON_VERSION}m
 PYTHON3_LIBRARY="$SYSROOT"/usr/local/lib/libpython${PYTHON_VERSION}m.so.1.0
 PYTHON3_NUMPY_INCLUDE_DIRS="$PYTHON3_SITE_PACKAGES"/numpy/core/include
-PYTHRAN_INCLUDE_DIRS=/usr/local/lib/python3.6/dist-packages/pythran
+# PYTHRAN_INCLUDE_DIRS=/usr/local/lib/python3.6/dist-packages/pythran
+PYTHRAN_INCLUDE_DIRS=/build/pythran/pythran
 GLOBAL_INCLUDE_DIR="$SYSROOT"/usr/local/include
 ATLAS_INCLUDE_DIR="$GLOBAL_INCLUDE_DIR"/atlas
 
