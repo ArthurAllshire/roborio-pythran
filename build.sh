@@ -40,7 +40,7 @@ pushd build
 [ ! -d sysroot ] || rm -rf sysroot
 mkdir sysroot
 
-PYTHON3_SITE_PACKAGES="$SYSROOT"/usr/local/lib/python${PYTHON_VERSION}/site-packages/
+PYTHON3_SITE_PACKAGES="$SYSROOT"/usr/local/lib/python${PYTHON_VERSION}/site-packages
 PYTHON3_INCLUDE_PATH="$SYSROOT"/usr/local/include/python${PYTHON_VERSION}m
 PYTHON3_LIBRARY="$SYSROOT"/usr/local/lib/libpython${PYTHON_VERSION}m.so.1.0
 PYTHON3_NUMPY_INCLUDE_DIRS="$PYTHON3_SITE_PACKAGES"/numpy/core/include
@@ -65,6 +65,7 @@ echo "Running compiler..."
     -pthread -DNDEBUG -g -fwrapv -O2 -Wall -g \
     -fstack-protector-strong -Wformat \
     -Werror=format-security -Wdate-time \
+    -march=armv8.1-a -mfpu=neon \
     -D_FORTIFY_SOURCE=2 -fPIC \
     -DENABLE_PYTHON_MODULE -D__PYTHRAN__=3 \
     -DENABLE_PYTHON_MODULE -D__PYTHRAN__=3 \
@@ -74,5 +75,5 @@ echo "Running compiler..."
     -I"$PYTHON3_INCLUDE_PATH" \
     -I"$GLOBAL_INCLUDE_DIR" \
     -I"$ATLAS_INCLUDE_DIR" \
-    -std=c++11 \
-    -o src/estimator_pythran.o \
+    -std=c++14 \
+    -o "$ROOT"/src/estimator_pythran.o

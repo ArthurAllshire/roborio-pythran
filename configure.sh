@@ -39,14 +39,7 @@ pushd pythran
 echo "Patching pythran's xsimd installation so the includes actually work with the cross compiler"
 pushd third_party
 rm -rf xsimd
-git clone "$XSIMD_REPO" xsimd-repo --branch "$XSIMD_RELEASE"
-pushd xsimd-repo
-git remote add patcher https://github.com/wolfv/xsimd
-git fetch patcher
-git rebase patcher/fix_includes
-popd
-cp -r xsimd-repo/include/xsimd xsimd
-rm -rf xsimd-repo
+cp -r /build/xsimd/include/xsimd .
 popd
 pip3 install -e .
 popd
